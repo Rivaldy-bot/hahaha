@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCBA Calculator</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; }
+  label { display: block; margin-top: 10px; }
+  input, select { width: 100%; padding: 5px; margin-top: 5px; }
+  .results { margin-top: 20px; padding: 10px; background: #f3f4f6; border-radius: 8px; }
+</style>
+</head>
+<body>
+<h1>SCBA Calculator</h1>
+
+<label>Volume Silinder (L):<input type="number" id="cylVolume" value="6.8"></label>
+<label>Tekanan:<input type="number" id="pressure" value="300"></label>
+<label>Satuan Tekanan:
+<select id="pressureUnit">
+  <option value="bar">bar</option>
+  <option value="psi">psi</option>
+</select>
+</label>
+<label>Safety Reserve (bar):<input type="number" id="safetyReserve" value="50"></label>
+<label>Respiratory Minute Volume (L/min):<input type="number" id="rmv" value="40"></label>
+<label>Activity Factor:<input type="number" step="0.1" id="activityFactor" value="1"></label>
+
+<div class="results">
+  <p><b>Total Air:</b> <span id="totalAir">--</span> L</p>
+  <p><b>Durasi:</b> <span id="duration">--:--</span></p>
+</div>
+
+<script>
+function formatTime(minutesFloat){
+  if(!isFinite(minutesFloat)||minutesFloat<=0) return "--:--";
+  let totalSec = Math.floor(minutesFloat*60);
+  let mm = Math.floor(totalSec/60).toString().padStart(2,'0');
+  let ss = (totalSec%60).toString().padStart(2,'0');
+  return `${mm}:${ss}`;
+}
+
+function calculate(){
+  const cylVolume = parseFloat(document.getElementById('cylVolume').value);
+  let pressure = parseFloat(document.getElementById('pressure').value);
+  const unit = document.getElementById('pressureUnit').value;
+  const safetyReserve = parseFloat(document.getElementById('safetyReserve').value);
+  const rmv = parseFloat(document.getElementById('rmv').value);
+  const activityFactor = parseFloat(document.getElementById('activityFactor').value);
+
+  if(unit==='psi'){ pressure = pressure/14.5038; }
+
+  const usable = Math.max(0, pressure - safetyReserve);
+  const airLiters = cylVolume * usable;
+  const effectiveRmv = rmv * activityFactor;
+  const minutes = airLiters / effectiveRmv;
+
+  document.getElementById('totalAir').textContent = airLiters.toFixed(0);
+  document.getElementById('duration').textContent = formatTime(minutes);
+}
+
+document.querySelectorAll('input, select').forEach(el=>el.addEventListener('input', calculate));
+calculate();
+</script>
+</body>
+</html>
